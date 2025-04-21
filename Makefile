@@ -11,9 +11,15 @@ AR       = $(CONFIG_KENEX_CC_PREFIX)ar
 CFLAGS += -nostdinc -nostdlib
 IFLAGS += -Iarch/$(CONFIG_ARCH)/include -Iinclude
 
+LDFLAGS += 
+
 configs_h := arch/$(CONFIG_ARCH)/include/generated/configs.h
 
 IFLAGS += -include $(configs_h)
+
+ifeq ($(CONFIG_COMPILE_VER),debug)
+	CFLAGS += -g -O0
+endif
 
 .PHONY: __all clean
 __all: all
@@ -26,7 +32,7 @@ arch-obj := $(patsubst %/, %/built-in.o, $(arch-obj))
 include $(patsubst %/built-in.o, %/Makefile, $(arch-obj))
 
 $(arch-obj): $(arch-y)
-	$(LD) -r $(filter %.o, $(arch-y)) -o $@
+	$(LD) -r $(filter %.o, $(arch-y)) -o $@ $(LDFLAGS)
 
 objs += $(arch-obj)
 
