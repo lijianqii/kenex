@@ -18,7 +18,7 @@ configs_h := arch/$(CONFIG_ARCH)/include/generated/configs.h
 IFLAGS += -include $(configs_h)
 
 ifeq ($(CONFIG_COMPILE_VER),debug)
-	CFLAGS += -g -O0
+	CFLAGS += -g3 -O0
 endif
 
 .PHONY: __all clean
@@ -34,7 +34,15 @@ include $(patsubst %/built-in.o, %/Makefile, $(arch-obj))
 $(arch-obj): $(arch-y)
 	$(LD) -r $(filter %.o, $(arch-y)) -o $@ $(LDFLAGS)
 
-objs += $(arch-obj)
+init-obj := init/
+init-obj := $(patsubst %/, %/built-in.o, $(init-obj))
+
+include $(patsubst %/built-in.o, %/Makefile, $(init-obj))
+
+$(init-obj): $(init-y)
+	$(LD) -r $(filter %.o, $(init-y)) -o $@ $(LDFLAGS)
+
+objs += $(arch-obj) $(init-obj)
 
 export CC CPP LD OBJCOPY CFLAGS IFLAGS
 

@@ -2,3 +2,4 @@
 **/*.lds
 *.elf
 **/generated/
+/.vscode/

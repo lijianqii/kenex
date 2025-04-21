@@ -5,7 +5,7 @@ arch-y += $(KENEX_LD)
 arch-y += $(STARTUP_O)
 
 $(KENEX_LD): arch/$(CONFIG_ARCH)/kenex.lds.S
-	$(CPP) $< -o $@ $(CFLAGS) $(IFLAGS)
+	$(CPP) $(CFLAGS) $(IFLAGS) $< -o $@
 
 $(STARTUP_O): arch/$(CONFIG_ARCH)/startup/start.S
-	$(CC) -c $< -o $@ $(CFLAGS) $(IFLAGS)
+	$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@
