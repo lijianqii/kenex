@@ -43,6 +43,6 @@ $(configs_h): configs.in
 	@awk -F= '/^[^#]/ { printf "#define %-30s %s\n", $$1, $$2 }' $< >> $@
 
 __clean:
-	rm -rf $(configs_h) $(LD_SCRIPT) $(arch-y) $(arch-obj)
+	rm -rf $(configs_h) $(LD_SCRIPT) $(arch-y) $(arch-obj) kenex.elf
 
 clean: __clean ;
