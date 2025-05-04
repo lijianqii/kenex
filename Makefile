@@ -8,7 +8,7 @@ LD       = $(CONFIG_KENEX_CC_PREFIX)ld
 OBJCOPY  = $(CONFIG_KENEX_CC_PREFIX)objcopy
 AR       = $(CONFIG_KENEX_CC_PREFIX)ar
 
-CFLAGS += -nostdinc -nostdlib
+CFLAGS += -nostdinc -nostdlib -nostartfiles
 IFLAGS += -Iarch/$(CONFIG_ARCH)/include -Iinclude
 
 LDFLAGS += 
@@ -18,7 +18,7 @@ configs_h := arch/$(CONFIG_ARCH)/include/generated/configs.h
 IFLAGS += -include $(configs_h)
 
 ifeq ($(CONFIG_COMPILE_VER),debug)
-	CFLAGS += -g3 -O0
+	CFLAGS += -g -O0
 endif
 
 .PHONY: __all clean
