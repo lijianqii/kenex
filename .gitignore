@@ -3,3 +3,6 @@
 *.elf
 **/generated/
 /.vscode/
+/.cache/
+compile_commands.json
+*ctags
