@@ -21,6 +21,10 @@ ifeq ($(CONFIG_COMPILE_VER),debug)
 	CFLAGS += -g -O0
 endif
 
+ifeq ($(CONFIG_ARCH),arm)
+	CFLAGS += -march=$(CONFIG_ARM_ARCH) -marm
+endif
+
 .PHONY: __all clean
 __all: all
 
