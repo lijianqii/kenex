@@ -10,6 +10,9 @@ SECTIONS
     }
     . = ALIGN(1 << 20);
     .text : {
+        _vector_start = .;
+        KEEP(*(.vector))
+        _vector_end = .;
         _start_text = .;
         *(.text)
     }
