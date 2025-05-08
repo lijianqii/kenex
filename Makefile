@@ -1,4 +1,5 @@
 MAKEFLAGS += -rR --include-dir=$(CURDIR)
+MAKEFLAGS += --no-print-directory
 
 include configs.in
 
