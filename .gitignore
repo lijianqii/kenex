@@ -1,4 +1,5 @@
 **/*.o
+**/*.d
 **/*.lds
 *.elf
 **/generated/
