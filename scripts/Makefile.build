@@ -5,14 +5,22 @@ objs-s :=
 objs-S :=
 # c source files
 objs-c :=
-
+# objs
 objs-o :=
+
+buildsub :=
 
 buildsrc := $(SRC_TREE)/$(src)
 
 include configs.in
 
 include $(buildsrc)/Makefile
+
+buildsub := $(addsuffix Makefile, $(filter %/, $(objs-y)))
+
+ifneq ($(strip $(buildsub)),)
+include $(buildsub)
+endif
 
 objs-S := $(filter %.S, $(objs-y))
 objs-c := $(filter %.c, $(objs-y))
