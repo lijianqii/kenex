@@ -1,0 +1,41 @@
+# files need to be compile
+objs-y :=
+# asm files
+objs-s :=
+objs-S :=
+# c source files
+objs-c :=
+
+objs-o :=
+
+buildsrc := $(SRC_TREE)/$(src)
+
+include configs.in
+
+include $(buildsrc)/Makefile
+
+objs-S := $(filter %.S, $(objs-y))
+objs-c := $(filter %.c, $(objs-y))
+
+objs-S := $(objs-S:%.S=$(buildsrc)/%.S)
+objs-c := $(objs-c:%.c=$(buildsrc)/%.c)
+
+# CPP handle this
+objs-s := $(objs-S:%.S=%.s)
+
+objs-s-o := $(objs-s:%.s=%.o)
+objs-c-o := $(objs-c:%.c=%.o)
+
+objs-o += $(objs-s-o) $(objs-c-o)
+
+$(buildsrc)/built-in.o: $(objs-o)
+	$(LD) -r $< -o $@
+
+$(objs-s): $(objs-S)
+	$(CPP) $(CFLAGS) $(IFLAGS) -c $< -o $@
+
+$(objs-s-o): $(objs-s)
+	$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@
+
+$(objs-c-o): $(objs-c)
+	$(CC) $(CFLAGS) $(IFLAGS) -c $< -o $@

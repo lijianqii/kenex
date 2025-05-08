@@ -13,7 +13,7 @@ LD       = $(CONFIG_KENEX_CC_PREFIX)ld
 OBJCOPY  = $(CONFIG_KENEX_CC_PREFIX)objcopy
 AR       = $(CONFIG_KENEX_CC_PREFIX)ar
 
-CFLAGS += -nostdinc -nostdlib -nostartfiles -std=gnu11 -MMD -MF $(@:.o=.d)
+CFLAGS += -nostdinc -nostdlib -nostartfiles -std=gnu11
 IFLAGS += -Iarch/$(CONFIG_ARCH)/include -Iinclude
 
 LDFLAGS += 
@@ -24,8 +24,16 @@ KENEX_LDS := arch/$(CONFIG_ARCH)/kenex.lds
 
 IFLAGS += -include $(configs_h)
 
-ifeq ($(CONFIG_COMPILE_VER),debug)
-	CFLAGS += -g -O0
+SRC_TREE := .
+
+VPATH := $(SRC_TREE)
+
+ifeq ($(strip $(CONFIG_COMPILE_VER)),debug)
+	CFLAGS += -g -O0 -DKENEX_DEBUG
+endif
+
+ifeq ($(strip $(CONFIG_COMPILE_VER)),release)
+	CFLAGS += -g -O2 -DKENEX_RELEASE
 endif
 
 ifeq ($(CONFIG_ARCH),arm)
@@ -35,35 +43,24 @@ endif
 .PHONY: all clean
 all: __all
 
-LD_SCRIPT := arch/$(CONFIG_ARCH)/kenex.lds
+kenex-dirs += arch/$(CONFIG_ARCH)/ init/
 
-arch-obj := arch/$(CONFIG_ARCH)/
-arch-obj := $(patsubst %/, %/built-in.o, $(arch-obj))
+kenex-objs := $(foreach dir, $(kenex-dirs), $(patsubst %/, %/built-in.o, $(dir)))
 
-include $(patsubst %/built-in.o, %/Makefile, $(arch-obj))
+export CC CPP LD OBJCOPY CFLAGS IFLAGS SRC_TREE VPATH
 
-$(arch-obj): $(arch-y)
-	$(LD) -r $(filter %.o, $(arch-y)) -o $@ $(LDFLAGS)
+__all: $(configs_h) kenex ;
 
-init-obj := init/
-init-obj := $(patsubst %/, %/built-in.o, $(init-obj))
-
-include $(patsubst %/built-in.o, %/Makefile, $(init-obj))
-
-$(init-obj): $(init-y)
-	$(LD) -r $(filter %.o, $(init-y)) -o $@ $(LDFLAGS)
-
-objs += $(arch-obj) $(init-obj)
-
-export CC CPP LD OBJCOPY CFLAGS IFLAGS
-
-__all: $(configs_h) $(objs) link_kenex ;
+$(kenex-objs):
+	$(MAKE) -f scripts/Makefile.build src=$(@:%/built-in.o=%)
 
 $(KENEX_LDS): $(KENEX_LDS).S 
 	$(CPP) $(CFLAGS) $(IFLAGS) $< -o $@
 
-link_kenex: $(KENEX_LDS)
-	$(CC) -T $(KENEX_LDS) $(objs) $(CFLAGS) -o kenex.elf
+kenex: link_kenex ;
+
+link_kenex: $(KENEX_LDS) $(kenex-objs)
+	$(CC) -T $(KENEX_LDS) $(kenex-objs) $(CFLAGS) -o kenex.elf
 
 $(configs_h): configs.in
 	@mkdir -p $(dir $(configs_h))
@@ -71,6 +68,7 @@ $(configs_h): configs.in
 	@awk -F= '/^[^#]/ { printf "#define %-30s %s\n", $$1, $$2 }' $< >> $@
 
 __clean:
-	rm -rf $(dir $(configs_h)) $(LD_SCRIPT) $(arch-y) $(arch-obj) kenex.elf
+	rm -rf $(dir $(configs_h)) $(KENEX_LDS) $(kenex-objs) kenex.elf
+	rm -rf $(shell find ./ -name *.[os])
 
 clean: __clean ;
