@@ -66,7 +66,20 @@ link_kenex: $(KENEX_LDS) $(kenex-objs)
 $(configs_h): configs.in
 	@mkdir -p $(dir $(configs_h))
 	@echo "/* Auto-generated file - DO NOT EDIT */" > $@
-	@awk -F= '/^[^#]/ { printf "#define %-30s %s\n", $$1, $$2 }' $< >> $@
+	@awk -F= '\
+	    $$1 ~ /^CONFIG_[A-Z0-9_]+$$/ { \
+	        key = $$1; \
+	        value = substr($$0, index($$0, "=") + 1); \
+	        if (value == "y") { \
+	            printf "#define %-30s\n", key \
+	        } else if (value ~ /^\042.*\042$$/) { \
+	            gsub(/\042/, "", value); \
+	            printf "#define %-30s \"%s\"\n", key, value \
+	        } else { \
+	            printf "#define %-30s %s\n", key, value \
+	        } \
+	    } \
+	' $< > $@
 
 __clean:
 	rm -rf $(dir $(configs_h)) $(KENEX_LDS) $(kenex-objs) kenex.elf
